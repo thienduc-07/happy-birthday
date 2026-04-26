@@ -806,10 +806,76 @@
 
   #note-icon { display: inline-block; transition: animation 0.3s; }
   .playing #note-icon { animation: spin-note 3s linear infinite; }
+/* ── DEVICE WARNING (CHỈ CHO LAPTOP) ── */
+  #device-warning {
+    display: none; /* Mặc định ẩn trên laptop */
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw; height: 100vh;
+    background: var(--hero-bg);
+    z-index: 9999999;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .warning-content {
+    background: white;
+    padding: 3rem 2rem;
+    border-radius: 20px;
+    border: 1px solid var(--petal);
+    box-shadow: 0 10px 40px rgba(200,118,138,0.15);
+    max-width: 400px;
+  }
+
+  .warning-content h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--rose);
+    margin-bottom: 1rem;
+  }
+
+  .warning-content p {
+    font-size: 1.1rem;
+    color: var(--deep);
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* ── KHOÁ CHẶT MÀN HÌNH NHỎ (MOBILE/TABLET) ── */
+  @media (max-width: 1024px) {
+    /* 1. Hiện màn chắn */
+    #device-warning {
+      display: flex !important;
+    }
+    
+    /* 2. ẨN TẬN GỐC TOÀN BỘ NỘI DUNG WEB (chỉ chừa lại cái bảng thông báo)
+       Tránh lỗi spam F5 bị lộ hình ảnh phía sau */
+    body > *:not(#device-warning) {
+      display: none !important;
+    }
+
+    /* 3. Khoá chết thao tác vuốt, kéo rớt màn hình (pull-to-refresh / overscroll) */
+    html, body {
+      overflow: hidden !important;
+      overscroll-behavior: none !important;
+      touch-action: none !important; /* Liệt luôn cảm ứng kéo thả */
+      position: fixed; /* Chống cuộn trên iOS */
+      width: 100%; 
+      height: 100%;
+      background: var(--hero-bg);
+    }
+  }
 </style>
 </head>
 <body>
-
+<div id="device-warning">
+  <div class="warning-content">
+    <h2>Oops! 💻</h2>
+    <p>Món quà này được thiết kế đặc biệt để xem trên màn hình lớn.<br><br>Em yêu hãy mở link này bằng <strong>Máy tính/Laptop</strong> để xem trọn vẹn bất ngờ nhé! ❤️</p>
+  </div>
+</div>
 <canvas id="petals"></canvas>
 
 <!-- MUSIC PLAYER -->
@@ -993,6 +1059,7 @@
 </section>
 
 <script>
+  
 // ── CONFIG (chỉnh tại đây) ──────────────────────────
 const CONFIG = {
   gfName: "Hoàng Nhi",          // ← đổi tên bạn gái
@@ -1008,7 +1075,7 @@ const CONFIG = {
     { src: "./assets/memories/memory-006.jpg", caption: "Cảm ơn em vì đã ở đây cùng anh" }
   ],
   // Dùng khi muốn nạp hàng loạt ảnh: memory-001.jpg ... memory-120.jpg
-  memoryAutoCount: 7,
+  memoryAutoCount: 9,
   memoryAutoPattern: {
     folder: "./assets/memories/",
     prefix: "memory-",
@@ -1352,19 +1419,22 @@ let musicPlaying = false;
 let labelTimer;
 
 function toggleMusic() {
+  // KHOÁ CHẶT: Nếu màn hình nhỏ hơn hoặc bằng 1024px (đang bị block) thì không làm gì cả
+  if (window.innerWidth <= 1024) return; 
+
   const btn = document.getElementById('music-btn');
   const audio = document.getElementById('bg-music');
   const label = document.getElementById('music-label');
 
   if (!musicPlaying) {
+    musicPlaying = true; // FIX: Khoá cờ ngay lập tức để tránh lỗi click đúp 2 lần
     audio.play().then(() => {
-      musicPlaying = true;
       btn.classList.add('playing');
       label.classList.add('show');
       clearTimeout(labelTimer);
       labelTimer = setTimeout(() => label.classList.remove('show'), 3500);
     }).catch(() => {
-      musicPlaying = false;
+      musicPlaying = false; // Nếu lỗi thì nhả cờ ra
       btn.classList.remove('playing');
       label.textContent = '⚠️ Chưa tải được file nhạc';
       label.classList.add('show');
@@ -1386,18 +1456,30 @@ function toggleMusic() {
 
 // Hiện label khi hover
 document.getElementById('music-btn').addEventListener('mouseenter', () => {
+  if (window.innerWidth <= 1024) return;
   document.getElementById('music-label').classList.add('show');
 });
 document.getElementById('music-btn').addEventListener('mouseleave', () => {
-  if (!musicPlaying) document.getElementById('music-label').classList.remove('show');
+  if (!musicPlaying && window.innerWidth > 1024) document.getElementById('music-label').classList.remove('show');
 });
 
-// Tự bật nhạc ở lần tương tác đầu tiên (do browser chặn autoplay không tương tác)
+// Tự bật nhạc ở lần tương tác đầu tiên
 function startMusicOnFirstInteraction() {
-  if (!musicPlaying) toggleMusic();
+  // KHOÁ CHẶT: Chạm vào màn hình lúc bị chặn -> Bỏ qua, VẪN CHO PHÉP chạm lần sau
+  if (window.innerWidth <= 1024) return; 
+  
+  if (!musicPlaying) {
+    toggleMusic();
+  }
+  
+  // FIX: Chỉ khi nào đã chạm hợp lệ trên laptop (nhạc đã bật) thì mới gỡ sự kiện này ra
+  window.removeEventListener('click', startMusicOnFirstInteraction);
+  window.removeEventListener('touchstart', startMusicOnFirstInteraction);
 }
-window.addEventListener('click', startMusicOnFirstInteraction, { once: true });
-window.addEventListener('touchstart', startMusicOnFirstInteraction, { once: true });
+
+// Bỏ cái { once: true } đi để tránh bị chết yểu
+window.addEventListener('click', startMusicOnFirstInteraction);
+window.addEventListener('touchstart', startMusicOnFirstInteraction);
 
 // ── FIREWORKS ─────────────────────────────────────────
 // ── FIREWORKS ─────────────────────────────────────────
