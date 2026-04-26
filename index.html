@@ -902,13 +902,13 @@
 
 <!-- MUSIC PLAYER -->
 <div id="music-player">
-  <div id="music-label">🎵 Hơn Cả Yêu — Đức Phúc</div>
+  <div id="music-label">🎵 Lễ đường — Kai Đinh</div>
   <button id="music-btn" onclick="toggleMusic()" title="Nhạc nền">
     <span id="note-icon">🎵</span>
   </button>
 </div>
 <audio id="bg-music" loop preload="auto">
-  <source src="./assets/hon-ca-yeu-duc-phuc.mp3" type="audio/mpeg">
+  <source src="./assets/le-duong.mp3" type="audio/mpeg">
 </audio>
 
 <!-- HERO -->
@@ -1472,7 +1472,7 @@ function toggleMusic() {
       label.classList.add('show');
       clearTimeout(labelTimer);
       labelTimer = setTimeout(() => {
-        label.textContent = '🎵 Hơn Cả Yêu — Đức Phúc';
+        label.textContent = '🎵 Lễ đường — Kai Đinh';
         label.classList.remove('show');
       }, 2200);
     });
