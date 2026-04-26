@@ -15,17 +15,23 @@
     --petal: #f7c5d0;
     --text: #4a2a35;
     --muted: #9a7080;
+    --hero-bg: radial-gradient(ellipse at 60% 40%, #fce8ed 0%, #fdf6f0 60%);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    overscroll-behavior-y: none;
+  }
 
   body {
     font-family: 'Cormorant Garamond', serif;
-    background: var(--cream);
+    background: var(--hero-bg);
     color: var(--text);
     overflow-x: hidden;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
   }
 
   canvas#petals {
@@ -37,7 +43,26 @@
     opacity: 0.6;
   }
 
-  section { position: relative; z-index: 1; }
+  section {
+    position: relative;
+    z-index: 1;
+    isolation: isolate;
+    background: var(--hero-bg);
+  }
+
+  /* Làm mềm khúc giao nhau giữa các section */
+  section + section::before {
+    content: '';
+    position: absolute;
+    top: -34px;
+    left: 0;
+    right: 0;
+    height: 76px;
+    background: linear-gradient(to bottom, rgba(253,246,240,0.86), rgba(253,246,240,0));
+    filter: blur(10px);
+    pointer-events: none;
+    z-index: 0;
+  }
 
   /* ── HERO ── */
   #hero {
@@ -48,7 +73,7 @@
     justify-content: center;
     text-align: center;
     padding: 2rem;
-    background: radial-gradient(ellipse at 60% 40%, #fce8ed 0%, #fdf6f0 60%);
+    background: var(--hero-bg);
   }
 
   .hero-badge {
@@ -266,9 +291,10 @@
     overflow: hidden;
     position: relative;
     background:
-      radial-gradient(circle at 12% 18%, rgba(247,197,208,0.28), transparent 42%),
-      radial-gradient(circle at 88% 82%, rgba(201,169,110,0.2), transparent 38%),
-      linear-gradient(180deg, #fff9f7 0%, #fff3f5 45%, #fffaf6 100%);
+      radial-gradient(ellipse at 60% 40%, rgba(252,232,237,0.8) 0%, rgba(253,246,240,0.5) 58%, rgba(253,246,240,0.2) 78%),
+      radial-gradient(circle at 14% 84%, rgba(247,197,208,0.22), transparent 40%),
+      radial-gradient(circle at 86% 16%, rgba(201,169,110,0.14), transparent 34%),
+      linear-gradient(180deg, #fdf8f4 0%, #fdf6f0 70%);
   }
 
   #memories::before,
@@ -284,43 +310,98 @@
 
   #memories::before {
     left: 0;
-    background: linear-gradient(to right, #fff9f7 10%, rgba(255,249,247,0));
+    background: linear-gradient(to right, #fdf8f4 10%, rgba(253,248,244,0));
   }
 
   #memories::after {
     right: 0;
-    background: linear-gradient(to left, #fff9f7 10%, rgba(255,249,247,0));
+    background: linear-gradient(to left, #fdf8f4 10%, rgba(253,248,244,0));
   }
 
   .memory-strip {
-    margin-top: 3rem;
+    margin-top: 2.2rem;
     display: grid;
     gap: 1.15rem;
     position: relative;
     z-index: 1;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+    touch-action: pan-y;
+    padding-inline: 0;
+    perspective: 1200px;
+    transform-style: preserve-3d;
+  }
+
+  #memories.memories-enter .memory-strip {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .memories-ceremony {
+    position: relative;
+    padding: 0;
+  }
+
+  .memory-lane {
+    overflow: hidden;
+    opacity: 0;
+    filter: none;
+    transform-style: preserve-3d;
+  }
+
+  #memories.memories-enter .memory-lane.lane-left {
+    animation: laneReveal 0.9s ease-out forwards;
+  }
+
+  #memories.memories-enter .memory-lane.lane-right {
+    animation: laneReveal 0.9s ease-out forwards;
+  }
+
+  .memory-lane.lane-left {
+    transform: rotateX(8deg) translateZ(-26px);
+  }
+
+  .memory-lane.lane-right {
+    transform: rotateX(-8deg) translateZ(-26px);
   }
 
   .memory-row {
     display: flex;
     width: max-content;
-    gap: 1.1rem;
+    gap: 0;
     will-change: transform;
-    --distance: 1200px;
-    animation: memoryScroll 44s linear infinite;
-  }
-
-  .memory-row.reverse {
-    animation-name: memoryScrollReverse;
-    animation-duration: 52s;
-  }
-
-  #memories:hover .memory-row {
+    transform: translate3d(0, 0, 0);
+    animation: memoryMarquee var(--duration, 36s) linear infinite;
     animation-play-state: paused;
   }
 
+  .memory-row.reverse {
+    animation-name: memoryMarqueeReverse;
+    margin-left: 0;
+  }
+
+  .memory-row.running {
+    animation-play-state: running;
+  }
+
+  .memory-row.running:hover,
+  .memory-row.running:active {
+    animation-play-state: paused;
+    cursor: default;
+  }
+
+  .memory-cycle {
+    display: flex;
+    gap: 1.1rem;
+    padding-right: 1.1rem;
+    flex-shrink: 0;
+  }
+
   .memory-card {
-    width: clamp(220px, 22vw, 320px);
+    width: clamp(220px, 24vw, 420px);
     aspect-ratio: 4 / 5;
+    max-height: min(58vh, 380px);
     border-radius: 20px;
     overflow: hidden;
     position: relative;
@@ -329,12 +410,12 @@
       0 22px 45px rgba(107,58,74,0.17),
       inset 0 1px 0 rgba(255,255,255,0.5);
     background: linear-gradient(160deg, #fce8ed 0%, #f8d9e1 45%, #f6cfd9 100%);
-    transform: rotate(var(--tilt, 0deg));
+    transform: rotate(var(--tilt, 0deg)) rotateY(var(--yaw, 0deg)) translateZ(var(--zlift, 0px));
     transition: transform 0.35s ease, box-shadow 0.35s ease;
   }
 
   .memory-card:hover {
-    transform: translateY(-7px) rotate(var(--tilt, 0deg)) scale(1.01);
+    transform: translateY(-7px) rotate(var(--tilt, 0deg)) rotateY(var(--yaw, 0deg)) translateZ(calc(var(--zlift, 0px) + 8px)) scale(1.01);
     box-shadow:
       0 30px 55px rgba(107,58,74,0.2),
       inset 0 1px 0 rgba(255,255,255,0.6);
@@ -344,8 +425,12 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
     display: block;
     filter: saturate(1.06) contrast(1.03);
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,0.18), rgba(255,255,255,0) 55%),
+      linear-gradient(135deg, #f8d6df 0%, #f7c5d0 48%, #fbe9ee 100%);
   }
 
   .memory-card figcaption {
@@ -374,7 +459,9 @@
   /* ── LOVE LETTER ── */
   #letter {
     padding: 6rem 2rem;
-    background: linear-gradient(135deg, #fce8ed 0%, #fdf6f0 50%, #fef9f5 100%);
+    background:
+      radial-gradient(ellipse at 60% 40%, rgba(252,232,237,0.72) 0%, rgba(253,246,240,0.45) 62%, rgba(253,246,240,0.18) 82%),
+      linear-gradient(180deg, #fdf9f5 0%, #fdf6f0 72%);
   }
 
   .letter-wrap {
@@ -538,7 +625,9 @@
     justify-content: center;
     text-align: center;
     padding: 4rem 2rem;
-    background: radial-gradient(ellipse at 40% 60%, #fce8ed 0%, #fdf6f0 70%);
+    background:
+      radial-gradient(ellipse at 58% 44%, rgba(252,232,237,0.78) 0%, rgba(253,246,240,0.52) 60%, rgba(253,246,240,0.2) 82%),
+      linear-gradient(180deg, #fdf8f4 0%, #fdf6f0 74%);
     position: relative;
   }
 
@@ -610,21 +699,30 @@
     50%       { opacity: 0; }
   }
 
-  @keyframes memoryScroll {
-    from { transform: translateX(0); }
-    to   { transform: translateX(calc(-1 * var(--distance))); }
+  @keyframes memoryMarquee {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(calc(-1 * var(--distance, 1200px)), 0, 0); }
   }
 
-  @keyframes memoryScrollReverse {
-    from { transform: translateX(calc(-1 * var(--distance))); }
-    to   { transform: translateX(0); }
+  @keyframes memoryMarqueeReverse {
+    from { transform: translate3d(calc(-1 * var(--distance, 1200px)), 0, 0); }
+    to { transform: translate3d(0, 0, 0); }
+  }
+
+  @keyframes laneReveal {
+    from { opacity: 0; transform: translateY(14px) scale(0.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
   /* Mobile */
   @media (max-width: 600px) {
     .timeline-item { grid-template-columns: 1fr 32px 1fr; }
     .letter-wrap { padding: 2rem 1.5rem; }
-    .memory-card { width: clamp(190px, 58vw, 240px); }
+    .memory-card { width: clamp(180px, 56vw, 320px); max-height: 300px; }
+    .memory-row.reverse { margin-left: 0; }
+    .memory-strip { padding-inline: 0; }
+    .memory-lane.lane-left,
+    .memory-lane.lane-right { transform: rotateX(0deg) translateZ(0); }
   }
 
   /* ── MUSIC PLAYER ── */
@@ -759,15 +857,15 @@
       <p>Khoảnh khắc anh nhìn thấy em và biết rằng đây sẽ là người đặc biệt của mình</p>
     </div>
     <div class="tl-dot"><div class="tl-line"></div></div>
-    <div class="tl-date">📅 Ngày / Tháng / Năm</div>
+    <div class="tl-date">📅 30/03/2024</div>
   </div>
 
   <div class="timeline-item">
-    <div class="tl-date">📅 Ngày / Tháng / Năm</div>
+    <div class="tl-date">📅 08/04/2024</div>
     <div class="tl-dot"><div class="tl-line"></div></div>
     <div class="tl-content">
       <h3>Lần đầu hẹn hò</h3>
-      <p>Buổi hẹn đó anh hồi hộp suốt, nhưng bên em mọi thứ thật tự nhiên và ấm áp</p>
+      <p>Buổi hẹn đầu mình định đi ăn bánh flan nhưng quán đóng cửa, nên chuyển qua ăn bột chiên trước cổng trường THSG.</p>
     </div>
   </div>
 
@@ -780,22 +878,40 @@
     <div class="tl-date">📅 16/04/2024</div>
   </div>
 
-  <div class="timeline-item">
-    <div class="tl-date">📅 Ngày / Tháng / Năm</div>
+ <div class="timeline-item">
+    <div class="tl-date">📅 30/03/2025</div>
     <div class="tl-dot"><div class="tl-line"></div></div>
     <div class="tl-content">
-      <h3>[Thêm kỷ niệm đặc biệt]</h3>
-      <p>Điền vào đây một khoảnh khắc mà hai người cùng nhớ mãi...</p>
+      <h3>Tốt nghiệp cùng nhau 🎓</h3>
+      <p>Cùng nhau bước qua một chặng đường lớn — khoảnh khắc này anh sẽ nhớ mãi</p>
     </div>
   </div>
-
+ 
   <div class="timeline-item">
     <div class="tl-content">
-      <h3>[Thêm kỷ niệm đặc biệt]</h3>
-      <p>Và thêm một kỷ niệm nữa thật dễ thương của hai đứa mình...</p>
+      <h3>Kỷ niệm 1 năm 4 tháng 🎂</h3>
+      <p>Hai đứa cùng nhau làm bánh kem — ngọt ngào như tình yêu của chúng mình</p>
+    </div>
+    <div class="tl-dot"><div class="tl-line"></div></div>
+    <div class="tl-date">📅 01/08/2025</div>
+  </div>
+ 
+  <div class="timeline-item">
+    <div class="tl-date">📅 24/12/2025</div>
+    <div class="tl-dot"><div class="tl-line"></div></div>
+    <div class="tl-content">
+      <h3>Em về VN làm ốp cặp đôi 🎄</h3>
+      <p>Giáng sinh năm đó, em về và tụi mình có thêm một kỷ niệm dễ thương để nhớ mãi</p>
+    </div>
+  </div>
+ 
+  <div class="timeline-item">
+    <div class="tl-content">
+      <h3>Sinh nhật em yêu 🌸</h3>
+      <p>Hành trình vẫn còn tiếp tục — và anh muốn ở đây cùng em thật lâu</p>
     </div>
     <div class="tl-dot"></div>
-    <div class="tl-date">📅 Hôm nay ✨</div>
+    <div class="tl-date">📅 25/05/2026 ✨</div>
   </div>
 </section>
 
@@ -803,9 +919,15 @@
 <section id="memories">
   <h2 class="section-title">Bộ sưu tập <em>kỷ niệm</em></h2>
   <p class="section-sub">Những bức ảnh kể lại hành trình yêu thương của tụi mình</p>
-  <div class="memory-strip">
-    <div class="memory-row" id="memory-row-a"></div>
-    <div class="memory-row reverse" id="memory-row-b"></div>
+  <div class="memories-ceremony">
+    <div class="memory-strip">
+      <div class="memory-lane lane-left">
+        <div class="memory-row" id="memory-row-a"></div>
+      </div>
+      <div class="memory-lane lane-right">
+        <div class="memory-row reverse" id="memory-row-b"></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -874,13 +996,21 @@ const CONFIG = {
   startDate: "2024-04-16",      // ← ngày bắt đầu yêu nhau (YYYY-MM-DD)
   gfBirthDate: "2006-05-25",    // ← ngày sinh của bạn gái (YYYY-MM-DD)
   memoryPhotos: [
-    { src: "./assets/memories/memory-01.jpg", caption: "Một ngày rất dịu dàng của tụi mình" },
-    { src: "./assets/memories/memory-02.jpg", caption: "Nụ cười em là khung hình đẹp nhất" },
-    { src: "./assets/memories/memory-03.jpg", caption: "Khoảnh khắc nhỏ nhưng ở lại thật lâu" },
-    { src: "./assets/memories/memory-04.jpg", caption: "Chúng ta và một buổi chiều yên bình" },
-    { src: "./assets/memories/memory-05.jpg", caption: "Kỷ niệm này anh muốn giữ mãi" },
-    { src: "./assets/memories/memory-06.jpg", caption: "Cảm ơn em vì đã ở đây cùng anh" }
+    { src: "./assets/memories/memory-001.jpg", caption: "Một ngày rất dịu dàng của tụi mình" },
+    { src: "./assets/memories/memory-002.jpg", caption: "Nụ cười em là khung hình đẹp nhất" },
+    { src: "./assets/memories/memory-003.jpg", caption: "Khoảnh khắc nhỏ nhưng ở lại thật lâu" },
+    { src: "./assets/memories/memory-004.jpg", caption: "Chúng ta và một buổi chiều yên bình" },
+    { src: "./assets/memories/memory-005.jpg", caption: "Kỷ niệm này anh muốn giữ mãi" },
+    { src: "./assets/memories/memory-006.jpg", caption: "Cảm ơn em vì đã ở đây cùng anh" }
   ],
+  // Dùng khi muốn nạp hàng loạt ảnh: memory-001.jpg ... memory-120.jpg
+  memoryAutoCount: 7,
+  memoryAutoPattern: {
+    folder: "./assets/memories/",
+    prefix: "memory-",
+    padding: 3,
+    ext: "jpg"
+  },
   letterText:
 `Nhân dịp sinh nhật của em, anh muốn nói rằng em là điều tuyệt vời nhất đã xảy đến trong cuộc đời anh.
 
@@ -898,51 +1028,139 @@ document.getElementById('gf-name-finale').textContent = CONFIG.finaleName;
 (function() {
   const rowA = document.getElementById('memory-row-a');
   const rowB = document.getElementById('memory-row-b');
-  const photos = CONFIG.memoryPhotos;
-  if (!rowA || !rowB || !photos?.length) return;
+  const manualPhotos = CONFIG.memoryPhotos || [];
 
-  function renderRow(el, offset, setCount) {
-    let html = '';
-    const repeated = [];
-    for (let i = 0; i < setCount; i++) repeated.push(...photos);
-    repeated.forEach((item, idx) => {
-      const tilt = ((idx + offset) % 3 === 0) ? '-1.2deg' : ((idx + offset) % 3 === 1 ? '1deg' : '-0.4deg');
-      html += `
-        <figure class="memory-card" style="--tilt:${tilt}">
-          <img src="${item.src}" alt="Ky niem ${idx + 1}" loading="lazy" onerror="this.style.display='none'" />
-          <figcaption>${item.caption}</figcaption>
-        </figure>
-      `;
+  function buildAutoPhotos() {
+    const count = Number(CONFIG.memoryAutoCount || 0);
+    if (count <= 0) return [];
+    const { folder, prefix, padding, ext } = CONFIG.memoryAutoPattern || {};
+    const safeFolder = folder || './assets/memories/';
+    const safePrefix = prefix || 'memory-';
+    const safePadding = Number(padding || 3);
+    const safeExt = ext || 'jpg';
+    const list = [];
+    for (let i = 1; i <= count; i++) {
+      const n = String(i).padStart(safePadding, '0');
+      list.push({
+        src: `${safeFolder}${safePrefix}${n}.${safeExt}`,
+        
+      });
+    }
+    return list;
+  }
+
+  const photos = (CONFIG.memoryAutoCount > 0) ? buildAutoPhotos() : manualPhotos;
+  const memoriesSection = document.getElementById('memories');
+  if (!rowA || !rowB || !photos?.length || !memoriesSection) return;
+
+  function makeCard(item, idx, offset) {
+    const tilt = ((idx + offset) % 3 === 0) ? '-1.2deg' : ((idx + offset) % 3 === 1 ? '1deg' : '-0.4deg');
+    const yaw = ((idx % 10) - 5) * 1.15;
+    const zlift = -Math.abs(((idx % 10) - 5) * 0.9);
+    return `
+      <figure class="memory-card" style="--tilt:${tilt}; --yaw:${yaw}deg; --zlift:${zlift}px;">
+        <img src="${item.src}" alt="Ky niem ${idx + 1}" loading="lazy" />
+        ${item.caption ? `<figcaption>${item.caption}</figcaption>` : ''}
+      </figure>
+    `;
+  }
+
+  function renderRow(rowEl, startIndex, offset, speedPxPerSec) {
+    const cycle = [];
+    for (let i = 0; i < photos.length; i++) {
+      const photoIndex = (startIndex + i) % photos.length;
+      cycle.push(makeCard(photos[photoIndex], i, offset));
+    }
+
+    rowEl.innerHTML = `
+      <div class="memory-cycle">${cycle.join('')}</div>
+      <div class="memory-cycle" aria-hidden="true">${cycle.join('')}</div>
+    `;
+
+    const firstCycle = rowEl.querySelector('.memory-cycle');
+    if (!firstCycle) return;
+
+    const updateMetrics = () => {
+      const distance = firstCycle.offsetWidth;
+      if (!distance) return;
+      const duration = Math.max(12, distance / speedPxPerSec);
+      rowEl.style.setProperty('--distance', `${distance}px`);
+      rowEl.style.setProperty('--duration', `${duration}s`);
+    };
+
+    requestAnimationFrame(updateMetrics);
+    rowEl.querySelectorAll('img').forEach(img => {
+      img.addEventListener('load', () => {
+        updateMetrics();
+      }, { once: true });
+      img.addEventListener('error', () => {
+        const figure = img.closest('.memory-card');
+        if (figure) figure.remove();
+        updateMetrics();
+      }, { once: true });
     });
-    el.innerHTML = html;
-
-    const first = el.children[0];
-    const firstOfSecondSet = el.children[photos.length];
-    if (!first || !firstOfSecondSet) return;
-    const distance = firstOfSecondSet.offsetLeft - first.offsetLeft;
-    if (distance > 0) el.style.setProperty('--distance', `${distance}px`);
   }
 
   function renderAll() {
-    let setCount = 3;
-
-    // Đảm bảo track đủ dài so với viewport để không xuất hiện khoảng trống khi lặp.
-    renderRow(rowA, 0, setCount);
-    while (rowA.scrollWidth < window.innerWidth * 3 && setCount < 10) {
-      setCount++;
-      renderRow(rowA, 0, setCount);
-    }
-
-    renderRow(rowB, 1, setCount);
+    renderRow(rowA, 0, 0, 78);
+    renderRow(rowB, Math.floor(photos.length / 2), 1, 72);
   }
 
   renderAll();
+  let started = false;
+
+  function startMemoriesEntrance() {
+    if (started) return;
+    started = true;
+    memoriesSection.classList.add('memories-enter');
+    rowA.classList.add('running');
+    rowB.classList.add('running');
+  }
+
+  const enterObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        startMemoriesEntrance();
+        enterObserver.unobserve(memoriesSection);
+      }
+    });
+  }, { threshold: 0.26 });
+
+  enterObserver.observe(memoriesSection);
 
   let resizeTimer;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(renderAll, 120);
+    resizeTimer = setTimeout(() => {
+      renderAll();
+      if (started) {
+        rowA.classList.add('running');
+        rowB.classList.add('running');
+      }
+    }, 150);
   });
+})();
+
+// ── OVERSCROLL LOCK (mobile fallback) ─────────────────
+(function() {
+  let touchStartY = 0;
+
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches.length !== 1) return;
+    const currentY = e.touches[0].clientY;
+    const deltaY = currentY - touchStartY;
+    const atTop = window.scrollY <= 0;
+    const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 1;
+
+    if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {
+      e.preventDefault();
+    }
+  }, { passive: false });
 })();
 
 // ── COUNTER ──────────────────────────────────────────
