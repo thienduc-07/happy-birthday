@@ -8,6 +8,28 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>💗</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@500;700&display=swap" rel="stylesheet">
 <style>
+  /* ── ẨN THANH CUỘN (SCROLLBAR) TRÊN MỌI TRÌNH DUYỆT ── */
+  ::-webkit-scrollbar {
+    display: none; /* Ẩn trên Chrome, Safari, Cốc Cốc, Edge */
+  }
+  body {
+    font-family: 'Cormorant Garamond', serif;
+    background: var(--hero-bg);
+    color: var(--text);
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+    
+    /* ── THÊM 4 DÒNG NÀY ĐỂ CHỐNG BÔI ĐEN ── */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  html, body {
+    scrollbar-width: none; /* Ẩn trên Firefox */
+    -ms-overflow-style: none; /* Ẩn trên IE/Edge cũ */
+  }
   :root {
     --rose: #c8768a;
     --blush: #f0d5db;
@@ -1059,6 +1081,16 @@
 </section>
 
 <script>
+  // ── CHỐNG COPY & CHUỘT PHẢI ──
+// Chặn menu chuột phải
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+});
+
+// Chặn phím tắt Copy
+document.addEventListener('copy', function(e) {
+  e.preventDefault();
+});
   
 // ── CONFIG (chỉnh tại đây) ──────────────────────────
 const CONFIG = {
