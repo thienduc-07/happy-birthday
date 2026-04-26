@@ -1168,16 +1168,36 @@ document.getElementById('gf-name-finale').textContent = CONFIG.finaleName;
 })();
 
 // ── COUNTER ──────────────────────────────────────────
+// ── COUNTER ──────────────────────────────────────────
 (function() {
-  const start = new Date(CONFIG.startDate);
+  // 1. Cắt chuỗi ngày để ép máy tính dùng đúng múi giờ Việt Nam (Local Time)
+  const startParts = CONFIG.startDate.split('-');
+  const start = new Date(startParts[0], startParts[1] - 1, startParts[2]);
+  start.setHours(0, 0, 0, 0); // Đưa về 0h00 phút
+
   const now = new Date();
-  const diff = Math.floor((now - start) / 86400000);
-  document.getElementById('cnt-days').textContent = diff > 0 ? diff : '—';
-  document.getElementById('cnt-months').textContent = diff > 0 ? Math.floor(diff / 30) : '—';
-  const birth = new Date(CONFIG.gfBirthDate);
+  now.setHours(0, 0, 0, 0); // Đưa về 0h00 phút ngày hôm nay
+
+  // Tính khoảng cách tính bằng mili-giây, sau đó đổi ra ngày
+  let diffDays = Math.round((now - start) / 86400000);
+  
+  // CỘNG THÊM 1: Vì đếm luôn cả ngày đầu tiên yêu nhau là "Ngày 1"
+  diffDays += 1; 
+
+  document.getElementById('cnt-days').textContent = diffDays > 0 ? diffDays : '—';
+  
+  // Số tháng tạm tính bằng tổng ngày chia 30
+  document.getElementById('cnt-months').textContent = diffDays > 0 ? Math.floor(diffDays / 30) : '—';
+  
+  // 2. Tính tuổi chuẩn xác theo sinh nhật
+  const birthParts = CONFIG.gfBirthDate.split('-');
+  const birth = new Date(birthParts[0], birthParts[1] - 1, birthParts[2]);
   let age = now.getFullYear() - birth.getFullYear();
   const thisYearBirthday = new Date(now.getFullYear(), birth.getMonth(), birth.getDate());
+  
+  // Nếu chưa tới sinh nhật trong năm nay thì trừ đi 1 tuổi
   if (now < thisYearBirthday) age--;
+  
   document.getElementById('cnt-age').textContent = age >= 0 ? age : '—';
 })();
 
