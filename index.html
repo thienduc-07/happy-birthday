@@ -527,6 +527,7 @@
     font-size: 1.5rem;
     color: var(--rose);
     margin-bottom: 1.5rem;
+    margin-top: 1rem;
   }
 
   #letter-body {
@@ -540,6 +541,11 @@
   #letter-text {
     white-space: pre-wrap;
   }
+  #letter-text em {
+  color: var(--rose);
+  font-style: italic;
+  font-weight: 600;
+}
 
   .cursor {
     display: inline-block;
@@ -980,7 +986,7 @@
   <div class="timeline-item">
     <div class="tl-content">
       <h3>Kỷ niệm 1 năm 4 tháng 🎂</h3>
-      <p>Hai đứa cùng nhau làm bánh kem — ngọt ngào như tình yêu của chúng mình</p>
+      <p>Hai đứa cùng nhau làm bánh kem, cũng có một chút buồn vì sắp phải yêu xa</p>
     </div>
     <div class="tl-dot"><div class="tl-line"></div></div>
     <div class="tl-date">📅 01/08/2025</div>
@@ -1026,9 +1032,9 @@
   <h2 class="section-title">Thư của <em>anh</em></h2>
   <p class="section-sub">Những điều anh chưa nói được bằng lời</p>
   <div class="letter-wrap">
-    <p class="letter-greeting">Em yêu ơi,</p>
+    <p class="letter-greeting">Bé yêu ơi,</p>
     <p id="letter-body"><span id="letter-text"></span><span class="cursor" id="typing-cursor"></span></p>
-    <p class="letter-sign" id="sign">— Của anh, mãi mãi 💌</p>
+    <p class="letter-sign" id="sign">— Công chúa của anh, mãi mãi 💌</p>
   </div>
 </section>
 
@@ -1050,17 +1056,17 @@
     <div class="reason-card">
       <div class="reason-icon">🌙</div>
       <h3>Những đêm khuya bên nhau</h3>
-      <p>Chỉ cần có em, bất cứ nơi đâu cũng trở thành nhà</p>
+      <p>Những đêm tụi mình thức cùng nhau, chỉ để canh em ngủ — với anh, đó là bình yên nhất</p>
     </div>
     <div class="reason-card">
       <div class="reason-icon">☕</div>
-      <h3>[Điều em hay làm]</h3>
-      <p>Thay bằng một thói quen dễ thương của bạn gái bạn ở đây</p>
+      <h3>Cách em quan tâm</h3>
+<p>Những điều nhỏ nhặt em làm cho anh mỗi ngày khiến anh biết mình được yêu nhiều đến thế nào</p>
     </div>
     <div class="reason-card">
       <div class="reason-icon">✨</div>
-      <h3>[Điều em thích]</h3>
-      <p>Một đặc điểm riêng của cô ấy mà bạn yêu thích nhất</p>
+      <h3>Sự chu đáo của em</h3>
+      <p>Cách em luôn chuẩn bị và lên kế hoạch cho mọi thứ khiến anh cảm thấy yên tâm khi có em bên cạnh</p>  
     </div>
     <div class="reason-card">
       <div class="reason-icon">💕</div>
@@ -1107,7 +1113,7 @@ const CONFIG = {
     { src: "./assets/memories/memory-006.jpg", caption: "Cảm ơn em vì đã ở đây cùng anh" }
   ],
   // Dùng khi muốn nạp hàng loạt ảnh: memory-001.jpg ... memory-120.jpg
-  memoryAutoCount: 9,
+  memoryAutoCount: 11,
   memoryAutoPattern: {
     folder: "./assets/memories/",
     prefix: "memory-",
@@ -1115,13 +1121,13 @@ const CONFIG = {
     ext: "jpg"
   },
   letterText:
-`Nhân dịp sinh nhật của em, anh muốn nói rằng em là điều tuyệt vời nhất đã xảy đến trong cuộc đời anh.
+`Nhân dịp sinh nhật của bé iu, anh muốn nói rằng em là điều tuyệt vời nhất mà anh có được trong cuộc đời anh.
 
-Từng ngày bên em, anh học được rằng hạnh phúc không phải là điều gì to lớn — đôi khi chỉ là một buổi chiều ngồi bên nhau không nói gì, hay một nụ cười của em khi nhìn thấy anh.
+Anh chúc cho bé iu của anh ngày càng xinh đẹp, học giỏi, luôn thành công trong cuộc sống và đạt được mọi điều mà mình muốn và yêu anh nhiều nhiều hơn nữa 🤗
 
-Cảm ơn em đã chọn anh. Cảm ơn em đã kiên nhẫn, đã yêu thương và đã ở đây cùng anh.
+Cảm ơn em đã chọn anh. Cảm ơn em đã kiên nhẫn, đã yêu thương và đã ở đây cùng anh. Chúng ta đã trải qua nhiều khoảnh khắc, cột mốc quan trọng trong cuộc đời cùng nhau, và anh mong chúng ta sẽ luôn tiếp tục đồng hành cùng nhau trên quãng đường sắp tới.
 
-Chúc mừng sinh nhật em yêu. Hãy luôn mạnh mẽ và tỏa sáng nhé — vì thế giới này đẹp hơn nhiều khi có em trong đó.`
+Chúc mừng sinh nhật <em>Công Chúa</em> của anh. Hãy luôn mạnh mẽ và tỏa sáng nhé — vì thời gian sẽ không chờ đợi một ai.`
 };
 
 document.getElementById('gf-name-hero').textContent = CONFIG.gfName;
@@ -1432,12 +1438,12 @@ document.querySelectorAll('.timeline-item, .reason-card').forEach(el => observer
       function type() {
         if (i < text.length) {
           i++;
-          textEl.textContent = text.slice(0, i);
+          textEl.innerHTML = text.slice(0, i);
           cursorEl.style.display = 'inline-block';
           setTimeout(type, 22);
           return;
         }
-        textEl.textContent = text;
+        textEl.innerHTML = text;
         signEl.style.opacity = 1;
       }
       setTimeout(type, 400);
@@ -1691,7 +1697,31 @@ function loop() {
     }
   }
 }
+function handleDeviceBlock() {
+  const audio = document.getElementById('bg-music');
+  const btn = document.getElementById('music-btn');
 
+  if (window.innerWidth <= 1024) {
+    // Nếu đang phát thì tắt
+    if (audio && !audio.paused) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+
+    // Reset UI nút nhạc
+    if (btn) {
+      btn.classList.remove('playing');
+    }
+
+    musicPlaying = false;
+  }
+}
+
+// Chạy khi resize
+window.addEventListener('resize', handleDeviceBlock);
+
+// Chạy luôn lúc load (phòng trường hợp load ở màn nhỏ)
+handleDeviceBlock();
 </script>
 </body>
 </html>
